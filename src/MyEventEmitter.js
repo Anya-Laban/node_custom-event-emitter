@@ -1,8 +1,29 @@
 'use strict';
 
 class MyEventEmitter {
+  #addListener(type, listener, isFirst = false) {
+    if (typeof listener !== 'function') {
+      throw new Error('Listener must be a function');
+    }
+
+    if (!this._events) {
+      this._events = Object.create(null);
+    }
+
+    if (!this._events[type]) {
+      this._events[type] = [];
+    }
+
+    if (isFirst) {
+      this._events[type].unshift(listener);
+    } else {
+      this._events[type].push(listener);
+    }
+
+    return this;
+  }
   on(event, listener) {
-    this.addListener(event, listener);
+    this.#addListener(event, listener);
   }
   once(event, listener) {
     const wrapper = (...args) => {
@@ -10,7 +31,7 @@ class MyEventEmitter {
       listener(...args);
     };
 
-    this.addListener(event, wrapper);
+    this.#addListener(event, wrapper);
   }
   off(event, listener) {
     if (!this._events || !this._events[event]) {
@@ -31,7 +52,7 @@ class MyEventEmitter {
     });
   }
   prependListener(event, listener) {
-    this.addListener(event, listener, true);
+    this.#addListener(event, listener, true);
   }
   prependOnceListener(event, listener) {
     const wrapper = (...args) => {
@@ -39,7 +60,7 @@ class MyEventEmitter {
       listener(...args);
     };
 
-    this.addListener(event, wrapper, true);
+    this.#addListener(event, wrapper, true);
   }
   removeAllListeners(event) {
     if (!this._events || !this._events[event]) {
@@ -54,27 +75,6 @@ class MyEventEmitter {
     }
 
     return this._events[event].length || 0;
-  }
-  addListener(type, listener, isFirst = false) {
-    if (typeof listener !== 'function') {
-      throw new Error('Listener must by a function');
-    }
-
-    if (!this._events) {
-      this._events = Object.create(null);
-    }
-
-    if (!this._events[type]) {
-      this._events[type] = [];
-    }
-
-    if (isFirst) {
-      this._events[type].unshift(listener);
-    } else {
-      this._events[type].push(listener);
-    }
-
-    return this;
   }
 }
 
